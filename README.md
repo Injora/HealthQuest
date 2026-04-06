@@ -98,8 +98,8 @@ Google Forms → Google Sheets → n8n → AI Model → Google Sheets → React 
 
 ### 1️⃣ Clone Repository
 ```bash
-git clone https://github.com/your-username/ai-health-tracker.git
-cd ai-health-tracker
+git clone https://github.com/your-username/HealthQuest.git
+cd HealthQuest
 ```
 
 ### 2️⃣ Install Dependencies
