@@ -22,7 +22,7 @@ export default function Layout() {
         <div className="flex-col gap-6">
           <div className="flex items-center gap-3" style={{ padding: '0.5rem' }}>
             <Activity className="text-brand-primary" style={{ color: 'var(--brand-primary)' }} />
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>AI Wellness</h2>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Health Quest</h2>
           </div>
           
           <nav className="flex-col gap-2">
