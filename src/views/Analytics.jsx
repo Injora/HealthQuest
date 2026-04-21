@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { api } from '../api/mock';
+import { api } from '../api/supabase';
 import { useAppContext } from '../context/AppContext';
 import { Loader2 } from 'lucide-react';
 import {

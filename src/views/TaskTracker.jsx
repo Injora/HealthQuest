@@ -1,26 +1,69 @@
-import React, { useEffect, useState } from 'react';
-import { api } from '../api/mock';
+import React, { useEffect, useState, useRef } from 'react';
+import { api } from '../api/supabase';
 import { useAppContext } from '../context/AppContext';
 import { Loader2, CheckCircle2, Circle } from 'lucide-react';
 
 export default function TaskTracker() {
-  const { user } = useAppContext();
+  const { user, addStats } = useAppContext();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [animatingId, setAnimatingId] = useState(null);
+  const [responseId, setResponseId] = useState(null);
+  const prevResponseId = useRef(null);
 
+  // Fetch tasks and detect new responses
   useEffect(() => {
+    let cancelled = false;
+
     async function fetchData() {
       setLoading(true);
-      const data = await api.getTasks(user);
-      setTasks(data);
+      const result = await api.getTasks(user);
+      if (cancelled) return;
+
+      const { responseId: newId, tasks: newTasks } = result;
+
+      // If the Supabase row changed, reset everything
+      if (newId !== prevResponseId.current) {
+        prevResponseId.current = newId;
+        setResponseId(newId);
+        setTasks(newTasks);        // freshly normalized with completed: false
+        setAnimatingId(null);
+      } else {
+        // Same row — merge in any new data but keep local completion state
+        setTasks(prev => {
+          const completedIds = new Set(prev.filter(t => t.completed).map(t => t.id));
+          return newTasks.map(t => ({
+            ...t,
+            completed: completedIds.has(t.id) ? true : t.completed,
+          }));
+        });
+      }
+
       setLoading(false);
     }
+
     fetchData();
+
+    // Poll every 30s so new form submissions are picked up automatically
+    const interval = setInterval(fetchData, 30_000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, [user]);
 
+  // Reset completion state explicitly whenever responseId changes
+  useEffect(() => {
+    if (responseId === null) return;
+    setTasks(prev => prev.map(t => ({ ...t, completed: false })));
+    setAnimatingId(null);
+  }, [responseId]);
+
   const toggleTask = async (task) => {
-    if (task.completed) return; // Prevent un-checking mock
+    if (task.completed) return; // Prevent un-checking
+
+    const expReward = task.expReward ?? 50;
 
     // Optimistic Update
     setTasks(prev => prev.map(t => 
@@ -28,11 +71,12 @@ export default function TaskTracker() {
     ));
     setAnimatingId(task.id);
     
-    // Call backend API
-    const result = await api.completeTask(user, task.id);
+    // Persist to health_responses (marks task completed in that row)
+    await api.completeTask(user, task.id);
+
+    // Persist lifetime stats to user_profiles via context
+    await addStats(expReward, 1);
     
-    // In a real app we'd dispatch updated EXP to context if we stored it globally here.
-    // For now we just reset the animation flag after showing it.
     setTimeout(() => {
       setAnimatingId(null);
     }, 500);
@@ -42,6 +86,19 @@ export default function TaskTracker() {
     return (
       <div className="flex h-full items-center justify-center">
         <Loader2 className="animate-spin text-brand-primary" size={48} />
+      </div>
+    );
+  }
+
+  if (!tasks || tasks.length === 0) {
+    return (
+      <div className="flex-col gap-6 animate-fade-in">
+        <header style={{ marginBottom: '1rem' }}>
+          <h1 style={{ fontSize: '2rem', fontWeight: 700 }}>Daily Habits & Tasks</h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>
+            No tasks yet. Submit a health check to get personalized tasks!
+          </p>
+        </header>
       </div>
     );
   }

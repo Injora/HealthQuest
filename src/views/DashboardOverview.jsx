@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { api } from '../api/mock';
+import { api } from '../api/supabase';
 import { useAppContext } from '../context/AppContext';
 import { Award, Target, Activity as ActivityIcon, Loader2, Sparkles, AlertCircle } from 'lucide-react';
 
 export default function DashboardOverview() {
-  const { user } = useAppContext();
+  const { user, userProfile } = useAppContext();
   const [userData, setUserData] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,8 +31,13 @@ export default function DashboardOverview() {
     );
   }
 
-  // Calculate generic EXP logic for bar (Assuming Pro is 2000 EXP max or similar, let's say max level is 5000 exp)
-  const expPercentage = Math.min((userData.exp / 2000) * 100, 100);
+  // Use persistent lifetime stats from user_profiles (via context)
+  const lifetimeExp = userProfile.totalExp ?? userData.exp;
+  const lifetimeTasks = userProfile.tasksCompleted ?? userData.completedTasksCount;
+  const lifetimeLevel = lifetimeExp >= 250 ? 'Pro' : lifetimeExp >= 100 ? 'Intermediate' : 'Beginner';
+
+  // Calculate generic EXP logic for bar
+  const expPercentage = Math.min((lifetimeExp / 2000) * 100, 100);
 
   return (
     <div className="flex-col gap-6 animate-fade-in">
@@ -42,7 +47,7 @@ export default function DashboardOverview() {
           <p style={{ color: 'var(--text-secondary)', fontSize: '1rem' }}>Here's your wellness summary for today.</p>
         </div>
         <div className="badge badge-purple" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>
-          <Sparkles size={16} style={{ marginRight: '0.5rem' }} /> {userData.level}
+          <Sparkles size={16} style={{ marginRight: '0.5rem' }} /> {lifetimeLevel}
         </div>
       </header>
 
@@ -57,7 +62,7 @@ export default function DashboardOverview() {
               <Award size={24} />
             </div>
           </div>
-          <div style={{ fontSize: '2.5rem', fontWeight: 700 }}>{userData.exp} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>EXP</span></div>
+          <div style={{ fontSize: '2.5rem', fontWeight: 700 }}>{lifetimeExp} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>EXP</span></div>
           <div className="progress-container">
             <div className="progress-bar" style={{ width: `${expPercentage}%` }} />
           </div>
@@ -72,7 +77,7 @@ export default function DashboardOverview() {
               <Target size={24} />
             </div>
           </div>
-          <div style={{ fontSize: '2.5rem', fontWeight: 700 }}>{userData.completedTasksCount}</div>
+          <div style={{ fontSize: '2.5rem', fontWeight: 700 }}>{lifetimeTasks}</div>
           <p style={{ fontSize: '0.875rem', color: 'var(--status-success)' }}>Keep up the great work!</p>
         </div>
 
