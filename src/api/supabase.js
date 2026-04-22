@@ -195,12 +195,7 @@ export const api = {
       if (!data) return { responseId: null, tasks: [] };
 
       const tasks = parseJsonColumn(data.tasks, []);
-      // Always reset completed to false for fresh loads — completion state
-      // is managed in the component and persisted back via completeTask().
-      const normalizedTasks = tasks.map((t, i) => ({
-        ...normalizeTask(t, i),
-        completed: false,
-      }));
+      const normalizedTasks = tasks.map((t, i) => normalizeTask(t, i));
       return { responseId: data.id, tasks: normalizedTasks };
     } catch (err) {
       console.error('[api] getTasks unexpected error:', err);
@@ -236,7 +231,7 @@ export const api = {
 
       const { error: updateError } = await supabase
         .from('health_responses')
-        .update({ tasks: JSON.stringify(normalizedTasks) })
+        .update({ tasks: normalizedTasks })
         .eq('id', data.id);
 
       if (updateError) {
