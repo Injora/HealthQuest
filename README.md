@@ -1,176 +1,162 @@
-# 🧠 AI Health Symptom Checker & Wellness Tracker
-
-![React](https://img.shields.io/badge/Frontend-React-blue)
-![n8n](https://img.shields.io/badge/Automation-n8n-orange)
-![Status](https://img.shields.io/badge/Status-Active-success)
-![License](https://img.shields.io/badge/License-MIT-green)
-
-An AI-powered health assistant that analyzes symptoms, predicts possible conditions, and helps users build healthy habits through personalized tasks and gamification.
-
+# 🏥 Health Quest
+An AI-powered gamified health tracking app that turns your wellness journey into an adventure — log habits, earn XP, and get personalized AI insights.
+ 
 ---
-
+ 
 ## 🚀 Overview
-
-This project enables users to:
-
-- Submit symptoms via a form
-- Get AI-based condition predictions
-- Receive personalized remedies and wellness tips
-- Track health trends over time
-- Complete daily tasks and earn EXP points
-
+This project lets users:
+- 🔐 Log in securely using Google OAuth
+- 📋 Submit health data through Google Sheets
+- 🤖 Get AI-powered wellness insights via Groq
+- 💡 Receive personalized remedies & daily tips
+- 🎮 Complete health tasks and earn EXP points
+- 📊 Track progress on a real-time React dashboard
 ---
-
+ 
 ## 🏗️ Architecture
 ```text
-Google Forms → Google Sheets → n8n → AI Model → Google Sheets → React Dashboard
+Google Sheets
+   ↓
+n8n Trigger
+   ↓
+Groq AI Processing
+   ↓
+Supabase Database
+   ↔
+React Dashboard (Vite)
 ```
-
-### 🔄 Workflow
-
-1. User submits symptoms via Google Form
-2. Data is stored in Google Sheets
-3. n8n triggers on new entry
-4. AI processes symptoms and returns:
-   - Conditions (with probability)
-   - Remedies
-   - Tasks & tips
-5. Results are stored back in Google Sheets
-6. React dashboard fetches and displays data
-
+ 
 ---
-
+ 
+## 🔄 Workflow
+1. User logs health data via Google Sheets
+2. n8n detects new entry and triggers the workflow
+3. Groq AI processes the data and returns:
+   - Personalized wellness tips
+   - Daily health tasks
+   - EXP rewards
+4. Data is stored in Supabase (PostgreSQL)
+5. User logs into the React dashboard
+6. Dashboard fetches and displays data in real-time
+---
+ 
 ## ✨ Features
-
 | Feature | Description |
-|---|---|
-| 🧾 **Symptom Analysis** | AI-based condition prediction with confidence scores |
-| 🤖 **AI Recommendations** | Personalized tips and preventive advice |
-| ✅ **Task & Habit Tracker** | AI-generated tasks, mark complete, earn EXP |
-| 🎮 **Gamification** | EXP system with level progression |
-| 📊 **Analytics** | Sleep, stress & activity trends |
-| 🔔 **Notifications** | Task reminders and health alerts |
-
+|--------|------------|
+| 🔐 Secure Auth | Google OAuth with Supabase session management |
+| 🤖 AI Insights | Personalized health tips powered by Groq AI |
+| ✅ Task Tracker | Complete daily tasks & earn EXP |
+| 🎮 Gamification | Persistent lifetime EXP system |
+| 📊 Analytics | Track sleep, stress & activity over time |
+| ⚡ Real-time Updates | Live data sync via Supabase |
+| 🔔 Notifications | Task reminders & health alerts |
+ 
 ---
-
+ 
 ## 🛠️ Tech Stack
-
-- **Frontend:** React (Vite / Next.js)
-- **Automation:** n8n
-- **AI:** LLM (ChatGPT API)
-- **Database:** Google Sheets
-- **Forms:** Google Forms
-
+- **Frontend:** React (Vite)
+- **Automation:** n8n (Webhooks / ngrok)
+- **AI:** Groq API
+- **Database:** Supabase (PostgreSQL + RLS)
+- **Data Input:** Google Sheets
 ---
-
-## 🔌 API Endpoints (n8n Webhooks)
-
-| Endpoint | Method | Description |
-|---|---|---|
-| `/user-data` | GET | Fetch user dashboard data |
-| `/health-logs` | GET | Get symptom history |
-| `/tasks` | GET | Get user tasks |
-| `/complete-task` | POST | Mark task complete |
-| `/ai-recommendations` | GET | Fetch AI tips |
-| `/analytics` | GET | Fetch analytics |
-
+ 
+## 🗄️ Supabase Schema
+ 
+### `user_profiles`
+| Column | Type | Description |
+|--------|------|------------|
+| id | uuid | Primary key (auth.users) |
+| email | text | User email |
+| total_exp | int8 | Lifetime EXP points |
+| tasks_completed | int8 | Total completed tasks |
+ 
+### `health_responses`
+| Column | Type | Description |
+|--------|------|------------|
+| id | uuid | Primary key |
+| user_id | uuid | References user_profiles.id |
+| ai_data | jsonb | Stores tips, tasks & insights |
+| created_at | timestamptz | Timestamp of entry |
+ 
 ---
-
+ 
 ## 📂 Project Structure
 ```
-.
 ├── frontend/
 │   ├── components/
+│   ├── context/
 │   ├── pages/
-│   ├── services/
-│   └── hooks/
-│
+│   └── lib/
+│       └── supabase.js
 ├── n8n-workflows/
 │   └── workflow.json
-│
 └── docs/
     └── architecture.md
 ```
-
+ 
 ---
-
+ 
 ## ⚙️ Setup
-
-### 1️⃣ Clone Repository
+ 
+### 1️⃣ Clone the Repository
 ```bash
 git clone https://github.com/your-username/HealthQuest.git
 cd HealthQuest
 ```
-
-### 2️⃣ Install Dependencies
+ 
+### 2️⃣ Configure Environment Variables
+Create a `.env` file in the root directory:
+```env
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+ 
+### 3️⃣ Install Dependencies
 ```bash
 npm install
 ```
-
-### 3️⃣ Run Frontend
+ 
+### 4️⃣ Run the App
 ```bash
 npm run health
 ```
-
-### 🔗 n8n Setup
-
-1. Create a workflow in n8n
-2. Add trigger: Google Sheets (new row)
-3. Add AI processing node
-4. Save results back to Google Sheets
-5. Create webhook endpoints
-
+ 
 ---
-
-## 📊 Google Sheets Schema
-
-**Health Logs**
-
-| Email | Date | Symptoms | Condition | Confidence | Remedy |
-|---|---|---|---|---|---|
-
-**Tasks**
-
-| Email | Task | EXP | Status | Date |
-|---|---|---|---|---|
-
-**User Stats**
-
-| Email | Total EXP | Level |
-|---|---|---|
-
+ 
+## 🔗 n8n Setup
+1. Create a new workflow in n8n
+2. Add the following nodes:
+   - **Google Sheets Trigger** — fires on new rows
+   - **Groq AI Node** — generates health insights
+   - **HTTP Request** — sends data to Supabase API
+### Local Testing with ngrok
+```bash
+ngrok http 5678
+```
+ 
 ---
-
-## ⚠️ Disclaimer
-
-> This project is for **educational purposes only**.  
-> It does **NOT** provide medical advice. Always consult a professional.
-
----
-
+ 
 ## 🔮 Future Improvements
-
 - [ ] OAuth authentication
-- [ ] Mobile app
-- [ ] Health score system
-- [ ] Weekly AI reports
+- [ ] Persistent EXP system
+- [ ] Mobile app version
+- [ ] Weekly AI health reports
 - [ ] Streak tracking
-
 ---
-
+ 
+## ⚠️ Disclaimer
+This project is for **educational purposes only**. It does **not** provide medical advice. Always consult a qualified healthcare professional for health-related decisions.
+ 
+---
+ 
 ## 👨‍💻 Authors
-
-**Injora**
-
-**Kartik Tripathi**
-
-**Soham Dhande**
-
+- **Injora**
+- **Kartik Tripathi**
+- **Soham Dhande**
 ---
-
-
----
-
+ 
 ## 📜 License
+This project is licensed under the [MIT License](LICENSE).
+ 
 
-[MIT](LICENSE)
