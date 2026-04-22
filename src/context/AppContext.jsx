@@ -11,7 +11,7 @@ export const AppProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => localStorage.getItem('aiHealthTheme') || 'light');
 
   // Persistent lifetime stats from user_profiles
-  const [userProfile, setUserProfile] = useState({ totalExp: 0, tasksCompleted: 0 });
+  const [userProfile, setUserProfile] = useState({ totalExp: 0, tasksCompleted: 0, currentStreak: 0 });
 
   // Handle Theme
   useEffect(() => {
@@ -30,7 +30,7 @@ export const AppProvider = ({ children }) => {
   // Fetch persistent profile whenever we have a valid userId + email
   useEffect(() => {
     if (!userId || !user) {
-      setUserProfile({ totalExp: 0, tasksCompleted: 0 });
+      setUserProfile({ totalExp: 0, tasksCompleted: 0, currentStreak: 0 });
       return;
     }
 
@@ -90,24 +90,29 @@ export const AppProvider = ({ children }) => {
     let isMounted = true;
 
     // 1. Check for existing session first
-    supabase.auth.getSession()
-      .then(({ data, error }) => {
+    const initAuth = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
         if (error) {
           console.error('[AppContext] getSession error:', error.message);
         }
         if (isMounted) {
           applySession(data?.session);
-          setLoading(false);
         }
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error('[AppContext] getSession unexpected error:', err);
         if (isMounted) {
           setUser(null);
           setUserId(null);
+        }
+      } finally {
+        if (isMounted) {
           setLoading(false);
         }
-      });
+      }
+    };
+
+    initAuth();
 
     // 2. Listen for auth changes (login / logout / token refresh)
     let subscription;
@@ -116,14 +121,11 @@ export const AppProvider = ({ children }) => {
         console.log('[AppContext] Auth event:', event);
         if (isMounted) {
           applySession(session);
-          // Ensure loading is cleared on any auth event (handles OAuth redirect)
-          setLoading(false);
         }
       });
       subscription = data?.subscription;
     } catch (err) {
       console.error('[AppContext] onAuthStateChange error:', err);
-      if (isMounted) setLoading(false);
     }
 
     return () => {
@@ -167,7 +169,7 @@ export const AppProvider = ({ children }) => {
     }
     setUser(null);
     setUserId(null);
-    setUserProfile({ totalExp: 0, tasksCompleted: 0 });
+    setUserProfile({ totalExp: 0, tasksCompleted: 0, currentStreak: 0 });
   };
 
   // Show a visible loading spinner while resolving auth state

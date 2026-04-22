@@ -306,7 +306,7 @@ export const api = {
       // Try to fetch existing profile first
       const { data, error } = await supabase
         .from('user_profiles')
-        .select('total_exp, tasks_completed')
+        .select('total_exp, tasks_completed, current_streak, last_active_date')
         .eq('id', userId)
         .maybeSingle();
 
@@ -314,38 +314,63 @@ export const api = {
         console.error('[api] getUserProfile query error:', error.message);
       }
 
-      // If row exists, return it
+      const today = new Date().toISOString().split('T')[0];
+      let newStreak = 1;
+      let existingExp = 0;
+      let existingTasks = 0;
+
       if (data) {
-        return {
-          totalExp: data.total_exp ?? 0,
-          tasksCompleted: data.tasks_completed ?? 0,
-        };
+        existingExp = data.total_exp ?? 0;
+        existingTasks = data.tasks_completed ?? 0;
+        
+        const lastActive = data.last_active_date;
+        const currentStreak = data.current_streak ?? 0;
+
+        if (lastActive === today) {
+          newStreak = currentStreak; // Already logged in today
+        } else if (lastActive) {
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+          if (lastActive === yesterdayStr) {
+            newStreak = currentStreak + 1; // Logged in yesterday, increment
+          } else {
+            newStreak = 1; // Streak broken
+          }
+        } else {
+          newStreak = 1; // No last active date
+        }
       }
 
-      // Row doesn't exist — insert a fresh profile
+      // Upsert the new profile data with updated streak and last active date
       const { data: inserted, error: insertError } = await supabase
         .from('user_profiles')
         .upsert({
           id: userId,
           email,
-          total_exp: 0,
-          tasks_completed: 0,
+          total_exp: existingExp,
+          tasks_completed: existingTasks,
+          current_streak: newStreak,
+          last_active_date: today,
         }, { onConflict: 'id' })
-        .select('total_exp, tasks_completed')
+        .select('total_exp, tasks_completed, current_streak, last_active_date')
         .single();
 
       if (insertError) {
         console.error('[api] getUserProfile upsert error:', insertError.message);
-        return { totalExp: 0, tasksCompleted: 0 };
+        return { totalExp: existingExp, tasksCompleted: existingTasks, currentStreak: newStreak, lastActiveDate: today };
       }
 
       return {
         totalExp: inserted?.total_exp ?? 0,
         tasksCompleted: inserted?.tasks_completed ?? 0,
+        currentStreak: inserted?.current_streak ?? 0,
+        lastActiveDate: inserted?.last_active_date ?? today,
       };
     } catch (err) {
       console.error('[api] getUserProfile unexpected error:', err);
-      return { totalExp: 0, tasksCompleted: 0 };
+      return { totalExp: 0, tasksCompleted: 0, currentStreak: 0, lastActiveDate: null };
     }
   },
 

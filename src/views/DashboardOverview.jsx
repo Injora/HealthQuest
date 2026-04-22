@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../api/supabase';
 import { useAppContext } from '../context/AppContext';
-import { Award, Target, Activity as ActivityIcon, Loader2, Sparkles, AlertCircle } from 'lucide-react';
+import { Award, Target, Activity as ActivityIcon, Loader2, Sparkles, AlertCircle, Flame } from 'lucide-react';
 
 export default function DashboardOverview() {
   const { user, userProfile } = useAppContext();
@@ -37,7 +37,7 @@ export default function DashboardOverview() {
   const lifetimeLevel = lifetimeExp >= 250 ? 'Pro' : lifetimeExp >= 100 ? 'Intermediate' : 'Beginner';
 
   // Calculate generic EXP logic for bar
-  const expPercentage = Math.min((lifetimeExp / 2000) * 100, 100);
+  // const expPercentage = Math.min((lifetimeExp / 2000) * 100, 100);
 
   return (
     <div className="flex-col gap-6 animate-fade-in">
@@ -63,10 +63,6 @@ export default function DashboardOverview() {
             </div>
           </div>
           <div style={{ fontSize: '2.5rem', fontWeight: 700 }}>{lifetimeExp} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>EXP</span></div>
-          <div className="progress-container">
-            <div className="progress-bar" style={{ width: `${expPercentage}%` }} />
-          </div>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Progress to next rank</p>
         </div>
 
         {/* Tasks Card */}
@@ -93,6 +89,18 @@ export default function DashboardOverview() {
           <div className="flex items-center gap-2" style={{ fontSize: '0.875rem', color: 'var(--status-warning)' }}>
             <AlertCircle size={16} /> Needs attention
           </div>
+        </div>
+
+        {/* Streak Card */}
+        <div className="card flex-col gap-4">
+          <div className="flex justify-between items-center">
+            <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Current Streak</span>
+            <div style={{ padding: '0.5rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--status-error, #ef4444)', borderRadius: 'var(--radius-md)' }}>
+              <Flame size={24} />
+            </div>
+          </div>
+          <div style={{ fontSize: '2.5rem', fontWeight: 700 }}>{userProfile.currentStreak ?? 0} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>Days</span></div>
+          <p style={{ fontSize: '0.875rem', color: 'var(--status-error, #ef4444)' }}>Keep the fire burning!</p>
         </div>
 
       </div>
