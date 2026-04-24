@@ -256,45 +256,6 @@ export const api = {
   },
 
   /**
-   * Get analytics data — aggregates from all user health responses.
-   */
-  async getAnalytics(email) {
-    try {
-      const { data, error } = await supabase
-        .from('health_responses')
-        .select('*')
-        .eq('email', email)
-        .order('created_at', { ascending: false })
-        .limit(7);
-
-      if (error) {
-        console.error('[api] getAnalytics query error:', error.message);
-        return [];
-      }
-      if (!data || data.length === 0) return [];
-
-      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-      return data.map((row) => {
-        const date = new Date(row.created_at);
-        const tasks = parseJsonColumn(row.tasks, []);
-        const normalizedTasks = tasks.map(normalizeTask);
-        const completedCount = normalizedTasks.filter((t) => t.completed).length;
-
-        return {
-          name: dayNames[date.getDay()],
-          sleep: parseFloat((Math.random() * 3 + 5.5).toFixed(1)),
-          stress: Math.floor(Math.random() * 8 + 1),
-          activity: completedCount * 30 || Math.floor(Math.random() * 90 + 30),
-        };
-      }).reverse();
-    } catch (err) {
-      console.error('[api] getAnalytics unexpected error:', err);
-      return [];
-    }
-  },
-
-  /**
    * Fetch (or create) the user's persistent profile from user_profiles.
    * Uses upsert so the row is created on first login.
    * @param {string} userId - auth.uid() UUID

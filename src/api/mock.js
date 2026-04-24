@@ -20,15 +20,6 @@ let mockSystemData = {
     { id: 2, category: "Lifestyle", text: "Maintain a consistent sleep schedule to improve morning energy levels." },
     { id: 3, category: "Health Tip", text: "Adding 10 mins of meditation before bed can reduce stress markers by 15%." }
   ],
-  analytics: [
-    { name: "Mon", sleep: 7.5, stress: 4, activity: 60 },
-    { name: "Tue", sleep: 6.0, stress: 7, activity: 45 },
-    { name: "Wed", sleep: 8.0, stress: 3, activity: 90 },
-    { name: "Thu", sleep: 7.2, stress: 5, activity: 50 },
-    { name: "Fri", sleep: 5.5, stress: 8, activity: 30 },
-    { name: "Sat", sleep: 8.5, stress: 2, activity: 120 },
-    { name: "Sun", sleep: 9.0, stress: 1, activity: 100 }
-  ]
 };
 
 // Simulate network delay
@@ -84,10 +75,4 @@ export const api = {
       };
     }
     return { success: false, error: "Task not found or already completed." };
-  },
-
-  async getAnalytics(email) {
-    await delay(800);
-    return [...mockSystemData.analytics];
-  }
 };

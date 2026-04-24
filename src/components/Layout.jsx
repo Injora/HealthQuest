@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { LayoutDashboard, History, CheckCircle, BarChart2, LogOut, Sun, Moon, Activity } from 'lucide-react';
+import { LayoutDashboard, History, CheckCircle, LogOut, Sun, Moon, Activity } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 export default function Layout() {
@@ -10,7 +10,7 @@ export default function Layout() {
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
     { name: 'History', path: '/history', icon: History },
     { name: 'Tasks', path: '/tasks', icon: CheckCircle },
-    { name: 'Analytics', path: '/analytics', icon: BarChart2 },
+
   ];
 
   return (

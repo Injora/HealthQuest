@@ -7,7 +7,6 @@ import Layout from './components/Layout';
 import DashboardOverview from './views/DashboardOverview';
 import SymptomHistory from './views/SymptomHistory';
 import TaskTracker from './views/TaskTracker';
-import Analytics from './views/Analytics';
 
 function App() {
   const { user } = useAppContext();
@@ -22,7 +21,6 @@ function App() {
         <Route index element={<DashboardOverview />} />
         <Route path="history" element={<SymptomHistory />} />
         <Route path="tasks" element={<TaskTracker />} />
-        <Route path="analytics" element={<Analytics />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
